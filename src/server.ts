@@ -1,14 +1,28 @@
-import express, { Request, Response } from 'express';
-import mysql, { Connection } from 'mysql2';
+
+import express from 'express';
+import mysql from 'mysql2';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 
 dotenv.config();
 
 const app = express();
+
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(express.static(path.join(__dirname, 'dist')));
+
+
+
 app.use(bodyParser.json());
 
-const db: Connection = mysql.createConnection({
+const db = mysql.createConnection({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
@@ -23,9 +37,9 @@ db.connect(err => {
   }
 });
 
-app.get('/api/search', (req: Request, res: Response) => {
-  const query: string = req.query.q as string || '';
-  const sql: string = `
+app.get('/api/search', (req, res) => {
+  const query = req.query.q || '';
+  const sql = `
     SELECT * FROM books 
     WHERE title LIKE ? OR author LIKE ?
   `;
